@@ -17,11 +17,13 @@ const {
   releasePort
 } = require('./port');
 
+const Monitor = require('./monitor')
+
 const PROCESS_NAME = process.env.PROCESS_NAME || 'FFmpeg';
 const SERVER_PORT = process.env.SERVER_PORT || 3000;
 const HTTPS_OPTIONS = Object.freeze({
-  cert: fs.readFileSync('./ssl/server.crt'),
-  key: fs.readFileSync('./ssl/server.key')
+  cert: fs.readFileSync('./certs/fullchain.pem'),
+  key: fs.readFileSync('./certs/privkey.pem')
 });
 
 const httpsServer = https.createServer(HTTPS_OPTIONS);
@@ -175,7 +177,9 @@ const handleStartRecordRequest = async (jsonMessage) => {
     throw new Error(`Peer with id ${jsonMessage.sessionId} was not found`);
   }
 
-  startRecord(peer);
+  const monitor = new Monitor(peer, router)
+  monitor.start();
+  // startRecord(peer);
 };
 
 const handleStopRecordRequest = async (jsonMessage) => {
